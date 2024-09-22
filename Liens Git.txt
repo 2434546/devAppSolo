@@ -1,0 +1,4 @@
+Christophe Lavoie - 2232274 | James Laplante - 1336125 | Alexandre Siaudeau - 2434546 
+Utiliser la branche PresentationClient
+
+https://github.com/cegep-chicoutimi/Projet1DevAppExp.git
