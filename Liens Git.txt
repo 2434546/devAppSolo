@@ -1,4 +1,4 @@
-Christophe Lavoie - 2232274 | James Laplante - 1336125 | Alexandre Siaudeau - 2434546 
-Utiliser la branche PresentationClient
+Alexandre Siaudeau - 2434546 
+Utiliser la branche touche2fois pour la nouvelle fonctionnalité
 
-https://github.com/cegep-chicoutimi/Projet1DevAppExp.git
+https://github.com/2434546/devAppSolo.git
