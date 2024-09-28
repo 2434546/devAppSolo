@@ -15,32 +15,72 @@ namespace Serveur
 
         public Game()
         {
-            this.tableau = new Tableau();
+            //this.tableau = new Tableau();
         }
 
         public void StartGame(Socket socket)
         {
-            ChoisirBateau(socket);
+            int gridSize = ChoisirTailleGrille();
+            EnvoyerTailleGrille(gridSize, socket);
 
-            string win = "notWin";
+            bool partieAcceptee = RecevoirAccordClient(socket);
 
-            while (true)
+            if (partieAcceptee)
             {
-                string status;
-                if (win == "notWin")
-                    status = AdversaireJouer(socket);
-                else
-                    break;
+                tableau = new Tableau(gridSize);
+                ChoisirBateau(socket);
 
-                if(status == "continu")
-                    win = JouerTour(socket);
-                else
-                    break;
+                string win = "notWin";
 
+                while (true)
+                {
+                    string status;
+                    if (win == "notWin")
+                        status = AdversaireJouer(socket);
+                    else
+                        break;
+
+                    if (status == "continu")
+                        win = JouerTour(socket);
+                    else
+                        break;
+
+                }
+
+                RestartGame(socket);
             }
-
-            RestartGame(socket);
+            else
+            {
+                Console.WriteLine("Le client a refusé la partie.");
+            }
         }
+
+        private int ChoisirTailleGrille()
+        {
+            int taille = 0;
+            do
+            {
+                Console.WriteLine("Choisissez la taille de la grille (entre 4 et 9) : ");
+                taille = Convert.ToInt32(Console.ReadLine());
+            } while (taille < 4 || taille > 9);
+
+            return taille;
+        }
+
+        private void EnvoyerTailleGrille(int gridSize, Socket socket)
+        {
+            string jsonTaille = Serialiser.SerialiseIntToJson(gridSize);
+            byte[] bytes = Encoding.ASCII.GetBytes(jsonTaille);
+            socket.Send(bytes);
+        }
+
+        private bool RecevoirAccordClient(Socket socket)
+        {
+            byte[] bytes = new byte[1024];
+            int bytesRec = socket.Receive(bytes);
+            return Serialiser.DeserialiseBoolFromJson(Encoding.ASCII.GetString(bytes, 0, bytesRec));
+        }
+
 
         public void RestartGame(Socket socket)
         {

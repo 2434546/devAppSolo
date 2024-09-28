@@ -18,9 +18,9 @@ namespace Serveur
         int caseBateauPlace2;
 
 
-        public Tableau()
+        public Tableau(int size)
         {
-            size = 4;
+            this.size = size;
             this.tableauJoueur = new string[size * size];
             this.tableauAdversaire = new string[size * size];
         }
