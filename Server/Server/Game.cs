@@ -81,83 +81,88 @@ namespace Serveur
 
         public string JouerTour(Socket socket)
         {
-            Tir? tir = tableau.ChoixTir();
-            tir.status = "toCheck";
-
-            tableau.EnvoyerTir(tir, socket);
-
-            tir = tableau.RecevoirTir(socket);
-
-            if(tir != null)
+            bool tirEncore = true;
+            while (tirEncore)
             {
-                if (tir.status == "win")
-                {
-                    Console.Clear();
-                    Console.WriteLine("Vous avez gagné!!");
-                    return "win";
-                }
-            }
+                Tir? tir = tableau.ChoixTir();
+                tir.status = "toCheck";
 
-            AfficherJeux();
-
-            if (tir != null)
-            {
-                if (tir.status == "check")
-                {
-                    tableau.AjoutTir(tir);
-                    tir.status = "changeTour";
-                }
-            }
-
-            AfficherJeux();
-            if (tir != null)
                 tableau.EnvoyerTir(tir, socket);
+
+                tir = tableau.RecevoirTir(socket);
+
+                if (tir != null)
+                {
+                    if (tir.status == "win")
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Vous avez gagné!!");
+                        return "win";
+                    }
+
+                    if (tir.hit)
+                    {
+                        Console.WriteLine("Touché! Vous pouvez rejouer.");
+                        tirEncore = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Dans l'eau! Changement de tour.");
+                        tirEncore = false;
+                    }
+
+                    tableau.AjoutTir(tir);
+                }
+
+                AfficherJeux();
+            }
 
             return "notWin";
         }
 
+
         public string AdversaireJouer(Socket socket)
         {
-            Tir? tir = tableau.RecevoirTir(socket);
-            if (tir != null)
+            bool tirEncore = true;
+            while (tirEncore)
             {
-                if (tir.status == "toCheck")
+                Tir? tir = tableau.RecevoirTir(socket);
+                if (tir != null)
                 {
-                    tir = tableau.VerificationTir(tir);
-                    bool gagnant = tableau.VerifierGagnant();
-                    if (gagnant)
-                        tir.status = "win";
-
-                    tableau.EnvoyerTir(tir, socket);
-
-                    if (tir.status == "win")
+                    if (tir.status == "toCheck")
                     {
-                        Console.Clear();
-                        Console.WriteLine("Votre adversaire a gagnée");
-                        return "";
-                    }
-
-                    AfficherJeux();
-
-
-                    bool nextTour = false;
-                    while (nextTour != true)
-                    {
-                        tir = tableau.RecevoirTir(socket);
-                        if (tir != null)
+                        tir = tableau.VerificationTir(tir);
+                        bool gagnant = tableau.VerifierGagnant();
+                        if (gagnant)
                         {
-                            if (tir.status == "changeTour")
-                                nextTour = true;
-                            if (tir.status == "newGame" || tir.status == "stop")
-                                return "";
+                            tir.status = "win";
+                            tableau.EnvoyerTir(tir, socket);
+                            Console.Clear();
+                            Console.WriteLine("Votre adversaire a gagné");
+                            return "";
                         }
-                    }
 
+                        tableau.EnvoyerTir(tir, socket);
+                        
+                        if (tir.hit)
+                        {
+                            Console.WriteLine("Votre adversaire a touché un bateau! Il rejoue.");
+                            tirEncore = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Votre adversaire a raté. À vous de jouer.");
+                            tirEncore = false; 
+                        }
+
+                        AfficherJeux();
+                    }
                 }
             }
-                return "continu";           
-        }
 
+            return "continu";
+        }
+        
         public void AfficherJeux()
         {
             Console.Clear();
