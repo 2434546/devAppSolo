@@ -42,5 +42,15 @@ namespace Client
             bool boolean = JsonConvert.DeserializeObject<bool>(json);
             return boolean;
         }
+
+        public static string SerialiseIntToJson(int value)
+        {
+            return JsonConvert.SerializeObject(value);
+        }
+
+        public static int DeserialiseIntFromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<int>(json);
+        }
     }
 }

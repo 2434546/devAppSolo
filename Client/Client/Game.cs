@@ -14,34 +14,63 @@ namespace Client
 
         public Game()
         {
-            this.tableau = new Tableau();
+            //this.tableau = new Tableau();
         }
 
         public void StartGame(Socket socket)
         {
-            bool bateauChoisiServer = ChoisirBateau(socket);
-            string win = "notWin";
+            int tailleGrille = RecevoirTailleGrille(socket);
+            Console.WriteLine($"Le serveur propose une partie avec une grille de {tailleGrille}x{tailleGrille}. Voulez-vous jouer ? (o/n)");
 
-            if (bateauChoisiServer)
+            string choix = Console.ReadLine().ToLower();
+            bool accord = choix == "o";
+            EnvoyerAccord(accord, socket);
+
+            if (accord)
             {
-                while (true)
+                tableau = new Tableau(tailleGrille);
+                Console.WriteLine("Partie acceptée. La partie commence !");
+
+
+                bool bateauChoisiServer = ChoisirBateau(socket);
+                string win = "notWin";
+
+                if (bateauChoisiServer)
                 {
+                    while (true)
+                    {
 
-                    string status;
-                    if (win == "notWin")
-                        status = JouerTour(socket);
-                    else
-                        break;
+                        string status;
+                        if (win == "notWin")
+                            status = JouerTour(socket);
+                        else
+                            break;
 
-                    if (status == "continu")
-                        win = AdversaireJouer(socket);
-                    else
-                        break;
+                        if (status == "continu")
+                            win = AdversaireJouer(socket);
+                        else
+                            break;
 
+                    }
+
+                    RestartGame(socket);
                 }
-
-                RestartGame(socket);           
             }
+        }
+
+        private int RecevoirTailleGrille(Socket socket)
+        {
+            byte[] bytes = new byte[1024];
+            int bytesRec = socket.Receive(bytes);
+            string jsonTaille = Encoding.ASCII.GetString(bytes, 0, bytesRec);
+            return Serialiser.DeserialiseIntFromJson(jsonTaille);
+        }
+
+        private void EnvoyerAccord(bool accord, Socket socket)
+        {
+            string jsonAccord = Serialiser.SerialiseBoolToJson(accord);
+            byte[] bytes = Encoding.ASCII.GetBytes(jsonAccord);
+            socket.Send(bytes);
         }
 
         private void RestartGame(Socket socket)
